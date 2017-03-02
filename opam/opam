@@ -1,0 +1,25 @@
+opam-version: "1.2"
+name: "abt"
+version: "0.0.1"
+maintainer: "Ayberk Tosun <ayberk.tosun@gmail.com>"
+authors: [ "Ayberk Tosun <ayberk.tosun@gmail.com>" ]
+license: "MIT"
+build: [
+  ["ocaml" "setup.ml" "-configure" "--prefix" prefix]
+  ["ocaml" "setup.ml" "-build"]
+]
+install: ["ocaml" "setup.ml" "-install"]
+remove: [
+  ["ocamlfind" "remove" "abt"]
+]
+build-test: [
+  ["ocaml" "setup.ml" "-configure" "--enable-tests"]
+  ["ocaml" "setup.ml" "-build"]
+  ["ocaml" "setup.ml" "-test"]
+]
+depends: [
+  "camlp4" {build}
+  "core_kernel"
+  "ocamlbuild" {build}
+  "ocamlfind" {build}
+]

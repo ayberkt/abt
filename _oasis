@@ -1,0 +1,15 @@
+OASISFormat: 0.4
+Name:        abt
+Version:     0.0.1
+Synopsis:    OCaml port of CMU's abstract binding trees.
+Description: OCaml port of CMU's abstract binding trees.
+Authors:     Ayberk Tosun <ayberk.tosun@gmail.com>
+License:     MIT
+BuildDepends: core_kernel
+Plugins:      META (0.4)
+Library abt
+  Path:            src
+  BuildTools:      ocamlbuild, camlp4
+  BuildDepends:    core_kernel
+  Modules:         Variable, Operator, Abt, Abt_util
+  InternalModules: Util
