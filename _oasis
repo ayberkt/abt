@@ -1,6 +1,6 @@
 OASISFormat: 0.4
 Name:        abt
-Version:     0.0.1
+Version:     0.0.2
 Synopsis:    OCaml port of CMU's abstract binding trees.
 Description: OCaml port of CMU's abstract binding trees.
 Authors:     Ayberk Tosun <ayberk.tosun@gmail.com>
@@ -13,3 +13,8 @@ Library abt
   BuildDepends:    core_kernel
   Modules:         Variable, Operator, Abt, Abt_util
   InternalModules: Util
+Executable "foo"
+  BuildTools:      ocamlbuild, camlp4
+  BuildDepends:    core_kernel, abt
+  Path:            app
+  MainIs:          foo.ml
