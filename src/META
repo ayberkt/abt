@@ -1,6 +1,6 @@
 # OASIS_START
-# DO NOT EDIT (digest: cff5bbe00170d0a19a5b9a4b10952dd0)
-version = "0.0.1"
+# DO NOT EDIT (digest: 5c9dda714ac7b481a9e0c7fc2ce242e2)
+version = "0.0.2"
 description = "OCaml port of CMU's abstract binding trees."
 requires = "core_kernel core_kernel"
 archive(byte) = "abt.cma"

@@ -4,14 +4,14 @@ module CL = Core_kernel.Core_list
 
 module type ABT = sig
     module Variable : VARIABLE
-    module Operator : OPERATOR
+    type op
 
     type t
 
     type 'a view =
       VarView of Variable.t
     | AbsView of Variable.t * 'a
-    | AppView of Operator.t * 'a list
+    | AppView of op * 'a list
 
     exception Malformed
 
@@ -20,29 +20,37 @@ module type ABT = sig
 
     val aequiv : t * t -> bool
     val map : ('a -> 'b) -> 'a view -> 'b view
+
+    val freevars : t -> Variable.t list
+    val subst : t -> Variable.t -> t -> t
+
+    val intoVar : Variable.t -> t
+    val intoAbs : Variable.t -> t -> t
+    val intoApp : op -> t list -> t
+
+    val ( !! ) : Variable.t -> t
+    val ( ^^ ) : Variable.t -> t -> t
+    val ( $$ ) : op -> t list -> t
+
+    val to_string : t -> string
+
 end
 
-module MakeAbt(O : OPERATOR)
-  : (ABT with type Operator.t = O.t and type Variable.t = Var.t) =
-struct
-
+module MakeAbt (O : OPERATOR) :
+  (ABT with type op := O.t and module Variable = Var) = struct
   open Util
-
   module Variable = Var
-  module Operator = O
-  open Operator
 
   type 'a view =
-      VarView of Variable.t
-    | AbsView of Variable.t * 'a
-    | AppView of Operator.t * 'a list
-
+      VarView of Var.t
+    | AbsView of Var.t * 'a
+    | AppView of O.t * 'a list
 
   type t =
       FV of Var.t
     | BV of int
     | ABS of t
-    | OPER of Operator.t * t list
+    | OPER of O.t * t list
 
   exception Malformed
 
@@ -106,4 +114,51 @@ struct
     | OPER(f, ts), OPER(f', ts') ->
         O.equal(f, f') && Util.zipTest aequiv ts ts'
     | (_, _) -> false
+
+    module CL = Core_kernel.Core_list
+
+    let rec freevars e =
+      match out e with
+        (* freevars with a var view consists only with itself *)
+      | VarView x -> [x]
+        (* freevars with f applied to es, are the unique freevars
+        in all with e1, e2,..., en. *)
+      | AppView (_, es) ->
+            Util.collate Variable.equal (List.map freevars es)
+        (* Free vars with an abstraction view are the ones in the body,
+           except the variable `z` which is the one being abstracted.*)
+      | AbsView (z, e') -> Util.remove Variable.equal z (freevars e')
+
+      let intoVar x = into (VarView x)
+      let intoAbs x y = into (AbsView (x, y))
+      let intoApp x y = into (AppView (x, y))
+
+      let ( !! ) x = intoVar x
+      let ( ^^ ) x y = intoAbs x y
+      let ( $$ ) x y = intoApp x y
+
+      (* Substitute `e` for `x` in `body`. *)
+      let rec subst e x body =
+        let body' =
+          match out body with
+          | VarView y -> if Variable.equal(x, y)
+                     then out e
+                     else VarView y
+          | AppView (f, args) -> AppView (f, List.map (subst e x) args)
+          | AbsView (z, arg) -> AbsView (z, subst e x arg)
+        in
+            into body'
+
+      let rec to_string e =
+        match out e with
+        | VarView x -> Variable.to_string x
+        | AppView (f, es) ->
+            let esStr = if (CL.is_empty es) then "" else "(" ^ (toStrings es) ^ ")" in
+              O.to_string f ^ esStr
+         | AbsView (x, e) -> (Variable.to_string x) ^ "." ^ (to_string e)
+      and toStrings = function
+        | [] -> ""
+        | [e] -> to_string e
+        | e::es -> (to_string e) ^ "; " ^ (toStrings es)
+
 end

@@ -1,2 +1,5 @@
 _build
 setup.log
+opam
+tags
+foo.byte
