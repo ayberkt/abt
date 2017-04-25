@@ -1,6 +1,6 @@
 opam-version: "1.2"
 name: "abt"
-version: "0.0.2"
+version: "0.0.3"
 maintainer: "Ayberk Tosun <ayberk.tosun@gmail.com>"
 authors: [ "Ayberk Tosun <ayberk.tosun@gmail.com>" ]
 license: "MIT"
