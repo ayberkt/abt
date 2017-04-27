@@ -1,6 +1,6 @@
 OASISFormat: 0.4
 Name:        abt
-Version:     0.0.4
+Version:     0.0.3
 Synopsis:    OCaml port of CMU's abstract binding trees.
 Description: OCaml port of CMU's abstract binding trees.
 Homepage:    https://github.com/ayberkt/abt
