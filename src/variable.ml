@@ -1,9 +1,12 @@
+open Sort
+
 module type VARIABLE =
 sig
+  type sort
   type t
 
   (* Creates a new, globally unique variable. *)
-  val newvar : string -> t
+  val newvar : sort -> string -> t
 
   (* Tests whether two variable are equal. *)
   val equal : t * t -> bool
@@ -20,15 +23,17 @@ sig
   val toUserString : t -> string
 end
 
-module Var : (VARIABLE with type t = (string * int)) = struct
+module Var (S : SORT)
+  : (VARIABLE with type t = (S.t * string * int) and type sort = S.t) = struct
   module CI = Core_kernel.Core_int
-  type t = string * int
+  type sort = S.t
+  type t = S.t * string * int
 
   let counter = ref 0
 
-  let newvar s =
+  let newvar srt v =
     let _ = counter := !counter + 1 in
-    (s, !counter)
+    (v, !counter)
 
   let equal = function ((_ , n), (_, m)) -> n = m
 

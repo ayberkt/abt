@@ -47,7 +47,6 @@ module LamOp : OPERATOR with type op = lam_op = struct
     | Ap  -> [[] >>> Expr; [] >>> Expr] -->> Expr
     | FnDecl -> [[] >>> Expr; [Expr] >>> Decl] -->> Decl
 
-
   let equal (x, y) = x = y
 
   let to_string op =
