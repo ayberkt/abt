@@ -37,20 +37,20 @@ module type ABT = sig
 end
 
 module MakeAbt (O : OPERATOR) :
-  (ABT with type op := O.t and module Variable = Var) = struct
+  (ABT with type op := O.op and module Variable = Var) = struct
   open Util
   module Variable = Var
 
   type 'a view =
       VarView of Var.t
     | AbsView of Var.t * 'a
-    | AppView of O.t * 'a list
+    | AppView of O.op * 'a list
 
   type t =
       FV of Var.t
     | BV of int
-    | ABS of Var.t * t
-    | OPER of O.t * t list
+    | ABS of t
+    | OPER of O.op * t list
 
   exception Malformed
 
@@ -90,9 +90,9 @@ module MakeAbt (O : OPERATOR) :
     | VarView x -> FV x
     | AbsView (x, t) -> abs x t
     | AppView (f, es) ->
-      if BL.for_all (Util.zip_exact Malformed (O.arity f) es) ~f:valence_ok
-      then OPER (f, es)
-      else raise Malformed
+        if CL.for_all (Util.zip_exact Malformed (O.ar f) es) ~f:valence_ok
+        then OPER (f, es)
+        else raise Malformed
 
   let out t =
     match t with
