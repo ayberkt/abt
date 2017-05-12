@@ -1,7 +1,12 @@
 open Core_kernel.Core_printf
 open Core_kernel.Core_list
+open Sort
 open Operator
-open Abt
+(* open Abt *)
+
+type lam_sort =
+    Decl
+  | Expr
 
 type lam_op =
     Zero
@@ -9,26 +14,41 @@ type lam_op =
   | Let
   | Lam
   | Ap
+  | FnDecl
 
-module LamOp : OPERATOR with type t = lam_op = struct
-  type t = lam_op
+module LamSort : (SORT with type t = lam_sort) = struct
+  type t = lam_sort
+  let eq x y = x = y
 
-  let arity op =
+  let to_string = function
+    | Decl -> "decl"
+    | Expr -> "expr"
+end
+
+module LamOp : OPERATOR with type op = lam_op = struct
+  module St = LamSort
+  type op = lam_op
+
+  type sort = St.t
+  type valence = sort list * sort
+  type arity   = valence list * sort
+
+  let constant s = ([], s)
+  let nobind s = ([], s)
+  let (-->>) (xs : valence list) (s : sort) = (xs, s)
+  let (>>>) xs s = (xs, s)
+
+  let ar op =
     match op with
-    | Zero -> []
-    | Succ -> [0]
-    | Let  -> [0; 1]
-    | Lam  -> [1]
-    | Ap  -> [0; 0]
+    | Zero -> constant Expr
+    | Succ -> [[] >>> Expr] -->> Expr
+    | Let  -> [[] >>> Expr; [Expr] >>> Expr] -->> Expr
+    | Lam  -> [[Expr] >>> Expr] -->> Expr
+    | Ap  -> [[] >>> Expr; [] >>> Expr] -->> Expr
+    | FnDecl -> [[] >>> Expr; [Expr] >>> Decl] -->> Decl
 
-  let equal (x, y) =
-    match (x, y) with
-    | Zero, Zero -> true
-    | Succ, Succ -> true
-    | Let, Let   -> true
-    | Lam, Lam   -> true
-    | Ap, Ap     -> true
-    | _          -> false
+
+  let equal (x, y) = x = y
 
   let to_string op =
     match op with
@@ -37,6 +57,7 @@ module LamOp : OPERATOR with type t = lam_op = struct
     | Let  -> "let"
     | Lam  -> "lam"
     | Ap   -> "ap"
+    | FnDecl -> "decl"
 end
 
 module LamTerm = MakeAbt(LamOp)
