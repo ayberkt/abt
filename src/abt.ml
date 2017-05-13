@@ -3,10 +3,10 @@ open Operator
 module BL = Base.List
 
 module type ABT = sig
-    module Variable : VARIABLE
+    type sort
     type op
-
     type t
+    module Variable : VARIABLE with type sort = sort
 
     type 'a view =
       VarView of Variable.t
@@ -37,14 +37,14 @@ module type ABT = sig
 end
 
 module MakeAbt (O : OPERATOR) : ABT = struct
-  module Variable : VARIABLE = MakeVar(O.St)
-  type op = O.op
   type sort = O.St.t
+  type op = O.op
+  module Variable : (VARIABLE with type sort = sort) = MakeVar(O.St)
 
   type t =
       FV of Variable.t
-    | BV of int
-    | ABS of t
+    | BV of Variable.t
+    | ABS of sort * t
     | OPER of op * t list
 
   type 'a view =
@@ -52,14 +52,30 @@ module MakeAbt (O : OPERATOR) : ABT = struct
   | AbsView of Variable.t * 'a
   | AppView of op * 'a list
 
-  let rec valence_ok' (v : O.valence) e : bool =
-    match (v, e) with
-    | ([], rs), (ABS _) -> false
-    | (s::rest, rs), ABS e' -> valence_ok' (rest, rs) e'
-    | ([], rs), (FV _ | BV _ | OPER _) -> true
-    | _, (FV _ | BV _ | OPER _) -> false
-
   exception Malformed
+
+  (* Check that an abt has the right number of abstractions of right sort. *)
+  let valence_ok (v : O.valence) e : bool =
+    let rec valence_ok' srts e : bool =
+      match (srts, e) with
+      | [], (ABS _) -> false
+      | s::ss, ABS (absrt, e') ->
+          absrt = s && valence_ok' ss e'
+      | _, (FV _ | BV _ | OPER _) -> true
+    in valence_ok' (fst v) e
+
+  let rec match_sorts (abts : t list) (vlncs : O.valence list) =
+    match (abts, vlncs) with
+    | [], [] -> true
+    | [], _  -> false
+    | _, []  -> false
+    | ab::abs, v::vs -> snd v = get_sort ab && valence_ok v ab
+  and get_sort (abt : t) : sort =
+    match abt with
+    | FV x -> Variable.vsort x
+    | BV x -> Variable.vsort x
+    | ABS _ -> raise Malformed
+    | OPER (f, xs) -> failwith "induction"
 
   let into = failwith "foo"
   let out = failwith "foo"

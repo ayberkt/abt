@@ -31,7 +31,7 @@ sig
   val toUserString : t -> string
 end
 
-module MakeVar (S : SORT) : VARIABLE = struct
+module MakeVar (S : SORT) : VARIABLE with type sort = S.t = struct
   module CI = Core_kernel.Core_int
   type sort = S.t
   type t = sort * string * int
