@@ -36,21 +36,58 @@ module type ABT = sig
 
 end
 
-module MakeAbt (O : OPERATOR) :
-  (ABT with type op := O.op and module Variable = Var) = struct
+module MakeAbt (O : OPERATOR) : ABT = struct
+  module Variable : VARIABLE = MakeVar(O.St)
+  type op = O.op
+  type sort = O.St.t
+
+  type t =
+      FV of Variable.t
+    | BV of int
+    | ABS of t
+    | OPER of op * t list
+
+  type 'a view =
+    VarView of Variable.t
+  | AbsView of Variable.t * 'a
+  | AppView of op * 'a list
+
+  let rec valence_ok' (v : O.valence) e : bool =
+    match (v, e) with
+    | ([], rs), (ABS _) -> false
+    | (s::rest, rs), ABS e' -> valence_ok' (rest, rs) e'
+    | ([], rs), (FV _ | BV _ | OPER _) -> true
+    | _, (FV _ | BV _ | OPER _) -> false
+
+  exception Malformed
+
+  let into = failwith "foo"
+  let out = failwith "foo"
+
+  let aequiv = failwith "foo"
+  let map = failwith "foo"
+
+  let freevars = failwith "foo"
+  let subst = failwith "foo"
+
+  let intoVar = failwith "foo"
+  let intoAbs = failwith "foo"
+  let intoApp = failwith "foo"
+
+  let ( !! ) = failwith "foo"
+  let ( ^^ ) = failwith "foo"
+  let ( $$ ) = failwith "foo"
+
+  let to_string = failwith "foo"
+end
+(*  (ABT with type op := O.op and module Variable = Var) = struct
   open Util
-  module Variable = Var
+  (* module Variable = MakeVar(O.S) *)
 
   type 'a view =
       VarView of Var.t
     | AbsView of Var.t * 'a
     | AppView of O.op * 'a list
-
-  type t =
-      FV of Var.t
-    | BV of int
-    | ABS of t
-    | OPER of O.op * t list
 
   exception Malformed
 
@@ -59,10 +96,15 @@ module MakeAbt (O : OPERATOR) :
     | AbsView (x, a) -> AbsView (x, f a)
     | AppView (h, vs) -> AppView(h, List.map f vs)
 
-  let rec valence_ok (n, e) : bool =
+  (* let rec valence_ok (n, e) : bool =
     match e with
+<<<<<<< HEAD
     | ABS (_, e') -> if n > 0 then valence_ok (n - 1, e') else false
     | (FV _ | BV _ |OPER _) -> if n = 0 then true else false
+=======
+    | ABS e' -> if n > 0 then valence_ok (n-1, e') else false
+    | (FV _ | BV _ |OPER _) -> if n = 0 then true else false *)
+>>>>>>> Sorted variables
 
   exception AssertionFailureName
 
@@ -160,4 +202,4 @@ module MakeAbt (O : OPERATOR) :
         | [] -> ""
         | [e] -> to_string e
         | e::es -> (to_string e) ^ "; " ^ (toStrings es)
-end
+end *)
