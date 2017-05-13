@@ -8,6 +8,8 @@ sig
   (* Creates a new, globally unique variable. *)
   val newvar : sort -> string -> t
 
+  val vsort : t -> sort
+
   (* Tests whether two variable are equal. *)
   val equal : t * t -> bool
 
@@ -23,23 +25,25 @@ sig
   val toUserString : t -> string
 end
 
-module Var (S : SORT)
-  : (VARIABLE with type t = (S.t * string * int) and type sort = S.t) = struct
+module MakeVar (S : SORT) : VARIABLE = struct
   module CI = Core_kernel.Core_int
   type sort = S.t
-  type t = S.t * string * int
+  type t = sort * string * int
 
   let counter = ref 0
 
+  let vsort (s, _, _) = s
+
   let newvar srt v =
     let _ = counter := !counter + 1 in
-    (v, !counter)
+    (srt, v, !counter)
 
-  let equal = function ((_ , n), (_, m)) -> n = m
+  let equal =
+    function ((_, _ , n), (_, _, m)) -> n = m
 
-  let compare = function ((_, n), (_, m)) -> CI.compare n m
+  let compare = function ((_, _, n), (_, _, m)) -> CI.compare n m
 
-  let to_string (s, n) = s ^ "@" ^ (CI.to_string n)
+  let to_string (_, s, n) = s ^ "@" ^ (CI.to_string n)
 
-  let toUserString (s, _) = s
+  let toUserString (_, s, _) = s
 end
