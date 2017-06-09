@@ -2,8 +2,11 @@ module type VARIABLE =
 sig
   type t
 
+  (* Creates a new, named globally unique variable. *)
+  val named : string -> t
+
   (* Creates a new, globally unique variable. *)
-  val newvar : string -> t
+  val newvar : unit -> t
 
   (* Tests whether two variable are equal. *)
   val equal : t * t -> bool
@@ -16,25 +19,45 @@ sig
      variable. *)
   val to_string : t -> string
 
+  (* Clones a variable, to save its name *)
+  val clone : t -> t
+
   (* Provides the string used to create the variable. *)
   val toUserString : t -> string
 end
 
-module Var : (VARIABLE with type t = (string * int)) = struct
+module Var : (VARIABLE with type t = (string option * int)) = struct
   module CI = Core_kernel.Core_int
-  type t = string * int
+  type t = string option * int
 
   let counter = ref 0
 
-  let newvar s =
+  let named s =
     let _ = counter := !counter + 1 in
-    (s, !counter)
+    (Some s, !counter)
+
+  let newvar () =
+    let _ = counter := !counter + 1 in
+    (None, !counter)
 
   let equal = function ((_ , n), (_, m)) -> n = m
 
-  let compare = function ((_, n), (_, m)) -> CI.compare n m
+  let compare ((s, n), (s', m)) =
+    (match ((s, s'), CI.compare n m) with
+    | ((Some s, Some s'), 0) -> String.compare s s'
+    | (_, order) -> order)
 
-  let to_string (s, n) = s ^ "@" ^ (CI.to_string n)
+  let to_string (s, n) =
+    let str = (match s with Some s -> s | None -> "") in
+    str ^ "@" ^ (CI.to_string n)
 
-  let toUserString (s, _) = s
+  let clone (s, _) =
+    match s with
+    | Some s -> named s
+    | _ -> newvar ()
+
+  let toUserString (s, _) =
+    match s with
+      Some s -> s
+    | None -> ""
 end
