@@ -49,7 +49,7 @@ module MakeAbt (O : OPERATOR) :
   type t =
       FV of Var.t
     | BV of int
-    | ABS of t
+    | ABS of Var.t * t
     | OPER of O.t * t list
 
   exception Malformed
@@ -61,7 +61,7 @@ module MakeAbt (O : OPERATOR) :
 
   let rec valence_ok (n, e) : bool =
     match e with
-    | ABS e' -> if n > 0 then valence_ok (n-1, e') else false
+    | ABS (_, e') -> if n > 0 then valence_ok (n - 1, e') else false
     | (FV _ | BV _ |OPER _) -> if n = 0 then true else false
 
   exception AssertionFailureName
@@ -70,18 +70,18 @@ module MakeAbt (O : OPERATOR) :
     let rec bind' i t =
       match t with
         FV y  -> if Var.equal(x, y) then BV i else FV y
-      | ABS t  -> ABS (bind' (i+1) t)
+      | ABS (x, e)  -> ABS (x, bind' (i + 1) e)
       | BV n  -> BV n
       | OPER(f, ts)  -> OPER(f, List.map (bind' i) ts)
     in
-        ABS (bind' 0 t)
+        ABS (x, bind' 0 t)
 
   let unabs x t =
     let rec unabs' i t =
       match t with
-          BV j  -> if i = j then FV x else BV j
+        BV j  -> if i = j then FV x else BV j
       | FV x  -> FV x
-      | ABS t  -> ABS (unabs' (i+1) t)
+      | ABS (x, e)  -> ABS (x, unabs' (i+1) e)
       | OPER(f, ts)  -> OPER(f, List.map (unabs' i) ts)
     in
       unabs' 0 t
@@ -90,9 +90,9 @@ module MakeAbt (O : OPERATOR) :
     | VarView x -> FV x
     | AbsView (x, t) -> abs x t
     | AppView (f, es) ->
-        if CL.for_all (Util.zip_exact Malformed (O.arity f) es) ~f:valence_ok
-        then OPER (f, es)
-        else raise Malformed
+      if CL.for_all (Util.zip_exact Malformed (O.arity f) es) ~f:valence_ok
+      then OPER (f, es)
+      else raise Malformed
 
   let out t =
     match t with
@@ -105,12 +105,12 @@ module MakeAbt (O : OPERATOR) :
      | OPER (f, ts) -> AppView (f, ts)
      (* As we unpack the ABT we rename free variable to guarantee
         freshness. *)
-     | ABS t -> let x' = Var.newvar "x" in AbsView (x' , (unabs x' t))
+     | ABS (x, e) -> let x' = Var.clone x in AbsView (x' , (unabs x' e))
 
   let rec aequiv = function
     | FV x, FV y -> Var.equal(x, y)
     | BV n, BV m -> (n = m)
-    | ABS t, ABS t' -> aequiv(t, t')
+    | ABS (_, e), ABS (_, e') -> aequiv(e, e')
     | OPER(f, ts), OPER(f', ts') ->
         O.equal(f, f') && Util.zipTest aequiv ts ts'
     | (_, _) -> false
@@ -160,5 +160,4 @@ module MakeAbt (O : OPERATOR) :
         | [] -> ""
         | [e] -> to_string e
         | e::es -> (to_string e) ^ "; " ^ (toStrings es)
-
 end

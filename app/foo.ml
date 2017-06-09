@@ -47,15 +47,15 @@ open Variable
 
 (* lam(x.x) *)
 let id =
-  let x1 = newvar "x" in
-  let x2 = newvar "x" in
-  let x3 = newvar "x" in
+  let x1 = named "x" in
+  let x2 = named "x" in
+  let x3 = named "x" in
   Lam $$ [x1 ^^ (Lam $$ [x2 ^^ (Lam $$ [x3 ^^ !! x3])])]
 
 let s1 = Ap $$ [id; id]
 
 let s2 =
-  let (x1, x2) = (newvar "x", newvar "y") in
+  let (x1, x2) = (named "x", named "y") in
   Lam $$ [x1 ^^ (Lam $$ [x2 ^^ !! x1])]
 
 let zero = Zero $$ []
