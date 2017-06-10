@@ -4,3 +4,4 @@ opam
 tags
 foo.byte
 setup.data
+untyped.byte

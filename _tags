@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: ce91df809f902539f400a7e86f464890)
+# DO NOT EDIT (digest: 18333a812f082784c20bc17bf6fcfcb3)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -20,6 +20,9 @@ true: annot, bin_annot
 # Executable foo
 "app/foo.byte": pkg_core_kernel
 "app/foo.byte": use_abt
+# Executable untyped
+"app/untyped.byte": pkg_core_kernel
+"app/untyped.byte": use_abt
 <app/*.ml{,i,y}>: pkg_core_kernel
 <app/*.ml{,i,y}>: use_abt
 # OASIS_STOP

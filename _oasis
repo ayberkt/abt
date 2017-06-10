@@ -19,3 +19,8 @@ Executable "foo"
   BuildDepends:    core_kernel, abt
   Path:            app
   MainIs:          foo.ml
+Executable "untyped"
+  BuildTools:      ocamlbuild, camlp4
+  BuildDepends:    core_kernel, abt
+  Path:            app
+  MainIs:          untyped.ml
