@@ -40,12 +40,12 @@ module Var : (VARIABLE with type t = (string option * int)) = struct
     let _ = counter := !counter + 1 in
     (None, !counter)
 
-  let equal = function ((_ , n), (_, m)) -> n = m
-
   let compare ((s, n), (s', m)) =
     (match ((s, s'), CI.compare n m) with
     | ((Some s, Some s'), 0) -> String.compare s s'
     | (_, order) -> order)
+
+  let equal (x, y) = compare (x, y) = 0
 
   let to_string (s, n) =
     let str = (match s with Some s -> s | None -> "") in
