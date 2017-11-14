@@ -1,7 +1,3 @@
 _build
-setup.log
-opam
-tags
-foo.byte
-setup.data
-untyped.byte
+*.install
+*.merlin

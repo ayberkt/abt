@@ -1,4 +1,3 @@
-open Core_kernel.Core_printf
 open Operator
 open Abt
 open List

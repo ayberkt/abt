@@ -1,6 +1,6 @@
 open Variable
 open Operator
-module CL = Core_kernel.Core_list
+module BL = Base.List
 
 module type ABT = sig
     module Variable : VARIABLE
@@ -90,7 +90,7 @@ module MakeAbt (O : OPERATOR) :
     | VarView x -> FV x
     | AbsView (x, t) -> abs x t
     | AppView (f, es) ->
-      if CL.for_all (Util.zip_exact Malformed (O.arity f) es) ~f:valence_ok
+      if BL.for_all (Util.zip_exact Malformed (O.arity f) es) ~f:valence_ok
       then OPER (f, es)
       else raise Malformed
 
@@ -115,7 +115,7 @@ module MakeAbt (O : OPERATOR) :
         O.equal(f, f') && Util.zipTest aequiv ts ts'
     | (_, _) -> false
 
-    module CL = Core_kernel.Core_list
+    module BL = Base.List
 
     let rec freevars e =
       match out e with
@@ -153,7 +153,7 @@ module MakeAbt (O : OPERATOR) :
         match out e with
         | VarView x -> Variable.to_string x
         | AppView (f, es) ->
-            let esStr = if (CL.is_empty es) then "" else "(" ^ (toStrings es) ^ ")" in
+            let esStr = if (BL.is_empty es) then "" else "(" ^ (toStrings es) ^ ")" in
               O.to_string f ^ esStr
          | AbsView (x, e) -> (Variable.to_string x) ^ "." ^ (to_string e)
       and toStrings = function

@@ -1,5 +1,4 @@
-open Core_kernel.Core_printf
-open Core_kernel.Core_list
+open Base.List
 open Operator
 open Abt
 
@@ -67,7 +66,7 @@ let two  = Succ $$ [one]
 let _ =
   let pr x =
     try
-      printf "%s\n" (LamTerm.to_string x)
+    print_string (LamTerm.to_string x)
     with
-    | Malformed -> printf "Malformed ABT\n" in
+    | Malformed -> print_string "Malformed ABT\n" in
   iter [zero; one; two; id; s1; s2] ~f:pr
