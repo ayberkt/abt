@@ -27,7 +27,7 @@ sig
 end
 
 module Var : (VARIABLE with type t = (string option * int)) = struct
-  module CI = Core_kernel.Core_int
+  module BI = Base.Int
   type t = string option * int
 
   let counter = ref 0
@@ -41,7 +41,7 @@ module Var : (VARIABLE with type t = (string option * int)) = struct
     (None, !counter)
 
   let compare ((s, n), (s', m)) =
-    (match ((s, s'), CI.compare n m) with
+    (match ((s, s'), BI.compare n m) with
     | ((Some s, Some s'), 0) -> String.compare s s'
     | (_, order) -> order)
 
@@ -49,7 +49,7 @@ module Var : (VARIABLE with type t = (string option * int)) = struct
 
   let to_string (s, n) =
     let str = (match s with Some s -> s | None -> "") in
-    str ^ "@" ^ (CI.to_string n)
+    str ^ "@" ^ (BI.to_string n)
 
   let clone (s, _) =
     match s with

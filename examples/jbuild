@@ -1,0 +1,6 @@
+(executables
+ ((names (foo untyped))
+  (libraries (abt))
+))
+
+(jbuild_version 1)

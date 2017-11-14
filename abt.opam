@@ -1,0 +1,17 @@
+opam-version: "1.2"
+name: "abt"
+version: "0.0.4"
+homepage: "https://github.com/ayberkt/abt"
+maintainer: "Ayberk Tosun <ayberk.tosun@gmail.com>"
+authors: [ "Ayberk Tosun <ayberk.tosun@gmail.com>" ]
+license: "MIT"
+build: [
+  ["jbuilder" "build" "-p" name "-j" jobs]
+]
+depends: [
+  "jbuilder" {build & >= "1.0+beta12"}
+  "base" {build & >= "v0.9.4"}
+]
+descr: "
+OCaml port of CMU's abstract binding trees.
+"
