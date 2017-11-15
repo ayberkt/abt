@@ -32,9 +32,9 @@ sig
 end
 
 module MakeVar (S : SORT) : VARIABLE with type sort = S.t = struct
-  module CI = Core_kernel.Core_int
+  module BI = Base.Int
   type sort = S.t
-  type t = sort * string * int
+  type t = sort * string option * int
 
   let counter = ref 0
 
@@ -57,10 +57,10 @@ module MakeVar (S : SORT) : VARIABLE with type sort = S.t = struct
     let str = (match s with Some s -> s | None -> "") in
     str ^ "@" ^ (BI.to_string n)
 
-  let clone (s, _) =
+  let clone (srt, s, _) =
     match s with
-    | Some s -> named s
-    | _ -> newvar ()
+    | Some s -> named srt s
+    | _ -> newvar srt ()
 
   let toUserString (_, s, _) =
     match s with

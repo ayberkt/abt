@@ -4,6 +4,5 @@
  ((name abt)
   (public_name abt)
   (libraries (base))
-  (wrapped false)
  )
 )

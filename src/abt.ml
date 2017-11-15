@@ -114,13 +114,8 @@ end
 
   (* let rec valence_ok (n, e) : bool =
     match e with
-<<<<<<< HEAD
-    | ABS (_, e') -> if n > 0 then valence_ok (n - 1, e') else false
-    | (FV _ | BV _ |OPER _) -> if n = 0 then true else false
-=======
     | ABS e' -> if n > 0 then valence_ok (n-1, e') else false
     | (FV _ | BV _ |OPER _) -> if n = 0 then true else false *)
->>>>>>> Sorted variables
 
   exception AssertionFailureName
 
