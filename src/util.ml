@@ -13,7 +13,7 @@ module Util = struct
   let collate equal xss =
     let rec loop acc xs =
       match xs with
-      | [] -> []
+      | [] -> acc
       | ([] :: yss) -> loop acc yss
       | ((y :: ys) :: yss) when mem equal y acc -> loop acc (ys :: yss)
       | ((y :: ys) :: yss) -> loop (y :: acc) (ys :: yss)
