@@ -33,7 +33,7 @@ module type ABT = sig
     val ( ^^ ) : Variable.t -> t -> t
     val ( $$ ) : op -> t list -> t
 
-    val to_string : t -> string
+    val toString : t -> string
 
 end
 
@@ -150,15 +150,15 @@ module MakeAbt (O : OPERATOR) :
         in
             into body'
 
-      let rec to_string e =
+      let rec toString e =
         match out e with
-        | VarView x -> Variable.to_string x
+        | VarView x -> Variable.toString x
         | AppView (f, es) ->
             let esStr = if (BL.is_empty es) then "" else "(" ^ (toStrings es) ^ ")" in
-              O.to_string f ^ esStr
-         | AbsView (x, e) -> (Variable.to_string x) ^ "." ^ (to_string e)
+              O.toString f ^ esStr
+         | AbsView (x, e) -> (Variable.toString x) ^ "." ^ (toString e)
       and toStrings = function
         | [] -> ""
-        | [e] -> to_string e
-        | e::es -> (to_string e) ^ "; " ^ (toStrings es)
+        | [e] -> toString e
+        | e::es -> (toString e) ^ "; " ^ (toStrings es)
 end

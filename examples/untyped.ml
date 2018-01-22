@@ -21,7 +21,7 @@ module UntypedOp : OPERATOR with type t = untyped_op = struct
     | Ap, Ap -> true
     | _ -> false
 
-  let to_string op =
+  let toString op =
     match op with
     | Lam -> "lam"
     | Ap -> "ap"
@@ -67,7 +67,7 @@ let rec eval e =
   )
 
 let _ =
-  let show = UntypedTerm.to_string in
+  let show = UntypedTerm.toString in
 
   let x = named "x" in
   let y = named "y" in

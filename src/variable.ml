@@ -6,7 +6,7 @@ sig
   val named : string -> t
 
   (* Creates a new, globally unique variable. *)
-  val newvar : unit -> t
+  val newVar : unit -> t
 
   (* Tests whether two variable are equal. *)
   val equal : t * t -> bool
@@ -17,7 +17,7 @@ sig
 
   (* Provides a string representation of the globally unique
      variable. *)
-  val to_string : t -> string
+  val toString : t -> string
 
   (* Clones a variable, to save its name *)
   val clone : t -> t
@@ -36,7 +36,7 @@ module Var : (VARIABLE with type t = (string option * int)) = struct
     let _ = counter := !counter + 1 in
     (Some s, !counter)
 
-  let newvar () =
+  let newVar () =
     let _ = counter := !counter + 1 in
     (None, !counter)
 
@@ -47,14 +47,14 @@ module Var : (VARIABLE with type t = (string option * int)) = struct
 
   let equal (x, y) = compare (x, y) = 0
 
-  let to_string (s, n) =
+  let toString (s, n) =
     let str = (match s with Some s -> s | None -> "") in
     str ^ "@" ^ (BI.to_string n)
 
   let clone (s, _) =
     match s with
     | Some s -> named s
-    | _ -> newvar ()
+    | _ -> newVar ()
 
   let toUserString (s, _) =
     match s with

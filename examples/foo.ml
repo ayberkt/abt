@@ -28,7 +28,7 @@ module LamOp : OPERATOR with type t = lam_op = struct
     | Ap, Ap     -> true
     | _          -> false
 
-  let to_string op =
+  let toString op =
     match op with
     | Zero -> "z"
     | Succ -> "S"
@@ -65,7 +65,7 @@ let two  = Succ $$ [one]
 let _ =
   let pr x =
     try
-    print_string (LamTerm.to_string x)
+    print_string (LamTerm.toString x)
     with
     | Malformed -> print_string "Malformed ABT\n" in
   iter [zero; one; two; id; s1; s2] ~f:pr
