@@ -1,5 +1,6 @@
 open Variable
-open Operator
+include Operator
+
 module BL = Base.List
 
 module type ABT = sig

@@ -1,6 +1,6 @@
+(jbuild_version 1)
+
 (executables
  ((names (foo untyped))
   (libraries (abt))
 ))
-
-(jbuild_version 1)

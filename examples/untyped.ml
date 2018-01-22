@@ -1,4 +1,3 @@
-open Operator
 open Abt
 open List
 

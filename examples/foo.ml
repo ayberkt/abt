@@ -1,5 +1,4 @@
 open Base.List
-open Operator
 open Abt
 
 type lam_op =
