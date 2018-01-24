@@ -34,10 +34,11 @@ module MakeAbt (O : OPERATOR) = struct
   module BL = Base.List
   module Variable = Var
   module View = MakeView(O)
+
   open View
 
   type t =
-      FV of Var.t
+    | FV of Var.t
     | BV of int
     | ABS of Var.t * t
     | OPER of O.t * t list
@@ -52,27 +53,27 @@ module MakeAbt (O : OPERATOR) = struct
   let rec valence_ok (n, e) : bool =
     match e with
     | ABS (_, e') -> if n > 0 then valence_ok (n - 1, e') else false
-    | (FV _ | BV _ |OPER _) -> if n = 0 then true else false
+    | FV _ | BV _ | OPER _ -> n = 0
 
   exception AssertionFailureName
 
   let abs x t =
     let rec bind' i t =
       match t with
-        FV y -> if Var.equal(x, y) then BV i else FV y
+      | FV y -> if Var.equal (x, y) then BV i else FV y
       | ABS (x, e) -> ABS (x, bind' (i + 1) e)
-      | BV n  -> BV n
-      | OPER(f, ts) -> OPER(f, List.map (bind' i) ts)
+      | BV n -> BV n
+      | OPER(f, ts) -> OPER (f, List.map (bind' i) ts)
     in
-        ABS (x, bind' 0 t)
+      ABS (x, bind' 0 t)
 
   let unabs x t =
     let rec unabs' i t =
       match t with
-        BV j -> if i = j then FV x else BV j
+      | BV j -> if i = j then FV x else BV j
       | FV x -> FV x
-      | ABS (x, e) -> ABS (x, unabs' (i+1) e)
-      | OPER(f, ts) -> OPER(f, List.map (unabs' i) ts)
+      | ABS (x, e) -> ABS (x, unabs' (i + 1) e)
+      | OPER (f, ts) -> OPER (f, List.map (unabs' i) ts)
     in
       unabs' 0 t
 
@@ -86,35 +87,36 @@ module MakeAbt (O : OPERATOR) = struct
 
   let out t =
     match t with
-     (* If VarViewoutVarView is applied to a bound variable, something went wrong.
+      (*
+        If VarViewoutVarView is applied to a bound variable, something went wrong.
         Bound variables are not entitites by themselves and therefore they
-        be represented as a view *)
-       BV _ -> raise AssertionFailureName
-     | FV x -> VarView x
-     (* An application f to is is mapped to AppView VarViewAppViewVarView *)
-     | OPER (f, ts) -> AppView (f, ts)
-     (* As we unpack the ABT we rename free variable to guarantee
-        freshness. *)
-     | ABS (x, e) -> let x' = Var.clone x in AbsView (x' , (unabs x' e))
+        be represented as a view
+      *)
+    | BV _ -> raise AssertionFailureName
+    | FV x -> VarView x
+      (* An application f to is is mapped to AppView VarViewAppViewVarView *)
+    | OPER (f, ts) -> AppView (f, ts)
+      (* As we unpack the ABT we rename free variable to guarantee freshness. *)
+    | ABS (x, e) -> let x' = Var.clone x in AbsView (x', (unabs x' e))
 
   let rec aequiv = function
     | FV x, FV y -> Var.equal(x, y)
-    | BV n, BV m -> (n = m)
+    | BV n, BV m -> n = m
     | ABS (_, e), ABS (_, e') -> aequiv(e, e')
-    | OPER(f, ts), OPER(f', ts') ->
-        O.equal(f, f') && Util.zipTest aequiv ts ts'
-    | (_, _) -> false
+    | OPER (f, ts), OPER (f', ts') -> O.equal(f, f') && Util.zipTest aequiv ts ts'
+    | _ -> false
 
   let rec freevars e =
     match out e with
       (* freevars with a var view consists only with itself *)
     | VarView x -> [x]
       (* freevars with f applied to es, are the unique freevars
-      in all with e1, e2,..., en. *)
-    | AppView (_, es) ->
-          Util.collate Variable.equal (List.map freevars es)
-      (* Free vars with an abstraction view are the ones in the body,
-          except the variable `z` which is the one being abstracted.*)
+        in all with e1, e2,..., en. *)
+    | AppView (_, es) -> Util.collate Variable.equal (List.map freevars es)
+      (*
+        Free vars with an abstraction view are the ones in the body,
+        except the variable `z` which is the one being abstracted.
+      *)
     | AbsView (z, e') -> Util.remove Variable.equal z (freevars e')
 
   let intoVar x = into (VarView x)
@@ -129,11 +131,9 @@ module MakeAbt (O : OPERATOR) = struct
   let rec subst e x body =
     let body' =
       match out body with
-      | VarView y -> if Variable.equal(x, y)
-                  then out e
-                  else VarView y
+      | VarView y -> if Variable.equal(x, y) then out e else VarView y
       | AppView (f, args) -> AppView (f, List.map (subst e x) args)
       | AbsView (z, arg) -> AbsView (z, subst e x arg)
     in
-        into body'
+      into body'
 end

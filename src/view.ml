@@ -7,7 +7,7 @@ module type VIEW = sig
   type op
 
   type 'a view =
-    VarView of Variable.t
+  | VarView of Variable.t
   | AbsView of Variable.t * 'a
   | AppView of op * 'a list
 end
@@ -18,7 +18,7 @@ module MakeView (O : OPERATOR) = struct
   type op = O.t
 
   type 'a view =
-    VarView of Variable.t
+  | VarView of Variable.t
   | AbsView of Variable.t * 'a
   | AppView of op * 'a list
 end

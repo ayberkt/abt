@@ -11,12 +11,13 @@ sig
   (* Tests whether two variable are equal. *)
   val equal : t * t -> bool
 
-  (* Compares two variables.
-     This is used to allow variables as keys into a hash table. *)
+  (*
+    Compares two variables.
+    This is used to allow variables as keys into a hash table.
+  *)
   val compare : t * t -> int
 
-  (* Provides a string representation of the globally unique
-     variable. *)
+  (* Provides a string representation of the globally unique variable. *)
   val toString : t -> string
 
   (* Clones a variable, to save its name *)
@@ -26,8 +27,12 @@ sig
   val toUserString : t -> string
 end
 
-module Var : (VARIABLE with type t = (string option * int)) = struct
+module Var : VARIABLE
+  with type t = (string option * int)
+  = struct
+
   module BI = Base.Int
+
   type t = string option * int
 
   let counter = ref 0
@@ -41,14 +46,14 @@ module Var : (VARIABLE with type t = (string option * int)) = struct
     (None, !counter)
 
   let compare ((s, n), (s', m)) =
-    (match ((s, s'), BI.compare n m) with
-    | ((Some s, Some s'), 0) -> String.compare s s'
-    | (_, order) -> order)
+    match ((s, s'), BI.compare n m) with
+    | (Some s, Some s'), 0 -> String.compare s s'
+    | _, order -> order
 
   let equal (x, y) = compare (x, y) = 0
 
   let toString (s, n) =
-    let str = (match s with Some s -> s | None -> "") in
+    let str = match s with Some s -> s | None -> "" in
     str ^ "@" ^ (BI.to_string n)
 
   let clone (s, _) =
@@ -58,6 +63,6 @@ module Var : (VARIABLE with type t = (string option * int)) = struct
 
   let toUserString (s, _) =
     match s with
-      Some s -> s
+    | Some s -> s
     | None -> ""
 end
