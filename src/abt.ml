@@ -1,46 +1,46 @@
 open Variable
+include Abt_printer
+include View
 include Operator
 
 module BL = Base.List
 
 module type ABT = sig
-    module Variable : VARIABLE
-    type op
+  module Variable : VARIABLE
+  module View : VIEW
 
-    type t
+  type op
 
-    type 'a view =
-      VarView of Variable.t
-    | AbsView of Variable.t * 'a
-    | AppView of op * 'a list
+  type t
 
-    exception Malformed
+  exception Malformed
 
-    val into : t view -> t
-    val out : t -> t view
+  val into : t View.view -> t
+  val out : t -> t View.view
 
-    val aequiv : t * t -> bool
-    val map : ('a -> 'b) -> 'a view -> 'b view
+  val aequiv : t * t -> bool
+  val map : ('a -> 'b) -> 'a View.view -> 'b View.view
 
-    val freevars : t -> Variable.t list
-    val subst : t -> Variable.t -> t -> t
+  val freevars : t -> Variable.t list
+  val subst : t -> Variable.t -> t -> t
 
-    val intoVar : Variable.t -> t
-    val intoAbs : Variable.t -> t -> t
-    val intoApp : op -> t list -> t
+  val intoVar : Variable.t -> t
+  val intoAbs : Variable.t -> t -> t
+  val intoApp : op -> t list -> t
 
-    val ( !! ) : Variable.t -> t
-    val ( ^^ ) : Variable.t -> t -> t
-    val ( $$ ) : op -> t list -> t
+  val ( !! ) : Variable.t -> t
+  val ( ^^ ) : Variable.t -> t -> t
+  val ( $$ ) : op -> t list -> t
 
-    val toString : t -> string
-
+  val toString : t -> string
 end
 
-module MakeAbt (O : OPERATOR) :
-  (ABT with type op := O.t and module Variable = Var) = struct
+module MakeAbt (O : OPERATOR) (P : ABT_PRINTER with type View.op = O.t) = struct
+  open Prettiest
   open Util
+
   module Variable = Var
+  module View = MakeView(O)
 
   type 'a view =
       VarView of Var.t
@@ -70,20 +70,20 @@ module MakeAbt (O : OPERATOR) :
   let abs x t =
     let rec bind' i t =
       match t with
-        FV y  -> if Var.equal(x, y) then BV i else FV y
-      | ABS (x, e)  -> ABS (x, bind' (i + 1) e)
+        FV y -> if Var.equal(x, y) then BV i else FV y
+      | ABS (x, e) -> ABS (x, bind' (i + 1) e)
       | BV n  -> BV n
-      | OPER(f, ts)  -> OPER(f, List.map (bind' i) ts)
+      | OPER(f, ts) -> OPER(f, List.map (bind' i) ts)
     in
         ABS (x, bind' 0 t)
 
   let unabs x t =
     let rec unabs' i t =
       match t with
-        BV j  -> if i = j then FV x else BV j
-      | FV x  -> FV x
-      | ABS (x, e)  -> ABS (x, unabs' (i+1) e)
-      | OPER(f, ts)  -> OPER(f, List.map (unabs' i) ts)
+        BV j -> if i = j then FV x else BV j
+      | FV x -> FV x
+      | ABS (x, e) -> ABS (x, unabs' (i+1) e)
+      | OPER(f, ts) -> OPER(f, List.map (unabs' i) ts)
     in
       unabs' 0 t
 
@@ -100,8 +100,8 @@ module MakeAbt (O : OPERATOR) :
      (* If VarViewoutVarView is applied to a bound variable, something went wrong.
         Bound variables are not entitites by themselves and therefore they
         be represented as a view *)
-       BV _  -> raise AssertionFailureName
-     | FV x  -> VarView x
+       BV _ -> raise AssertionFailureName
+     | FV x -> VarView x
      (* An application f to is is mapped to AppView VarViewAppViewVarView *)
      | OPER (f, ts) -> AppView (f, ts)
      (* As we unpack the ABT we rename free variable to guarantee
@@ -118,47 +118,43 @@ module MakeAbt (O : OPERATOR) :
 
     module BL = Base.List
 
-    let rec freevars e =
-      match out e with
-        (* freevars with a var view consists only with itself *)
-      | VarView x -> [x]
-        (* freevars with f applied to es, are the unique freevars
-        in all with e1, e2,..., en. *)
-      | AppView (_, es) ->
-            Util.collate Variable.equal (List.map freevars es)
-        (* Free vars with an abstraction view are the ones in the body,
-           except the variable `z` which is the one being abstracted.*)
-      | AbsView (z, e') -> Util.remove Variable.equal z (freevars e')
+  let rec freevars e =
+    match out e with
+      (* freevars with a var view consists only with itself *)
+    | VarView x -> [x]
+      (* freevars with f applied to es, are the unique freevars
+      in all with e1, e2,..., en. *)
+    | AppView (_, es) ->
+          Util.collate Variable.equal (List.map freevars es)
+      (* Free vars with an abstraction view are the ones in the body,
+          except the variable `z` which is the one being abstracted.*)
+    | AbsView (z, e') -> Util.remove Variable.equal z (freevars e')
 
-      let intoVar x = into (VarView x)
-      let intoAbs x y = into (AbsView (x, y))
-      let intoApp x y = into (AppView (x, y))
+  let intoVar x = into (VarView x)
+  let intoAbs x y = into (AbsView (x, y))
+  let intoApp x y = into (AppView (x, y))
 
-      let ( !! ) x = intoVar x
-      let ( ^^ ) x y = intoAbs x y
-      let ( $$ ) x y = intoApp x y
+  let ( !! ) x = intoVar x
+  let ( ^^ ) x y = intoAbs x y
+  let ( $$ ) x y = intoApp x y
 
-      (* Substitute `e` for `x` in `body`. *)
-      let rec subst e x body =
-        let body' =
-          match out body with
-          | VarView y -> if Variable.equal(x, y)
-                     then out e
-                     else VarView y
-          | AppView (f, args) -> AppView (f, List.map (subst e x) args)
-          | AbsView (z, arg) -> AbsView (z, subst e x arg)
-        in
-            into body'
+  (* Substitute `e` for `x` in `body`. *)
+  let rec subst e x body =
+    let body' =
+      match out body with
+      | VarView y -> if Variable.equal(x, y)
+                  then out e
+                  else VarView y
+      | AppView (f, args) -> AppView (f, List.map (subst e x) args)
+      | AbsView (z, arg) -> AbsView (z, subst e x arg)
+    in
+        into body'
 
-      let rec toString e =
-        match out e with
-        | VarView x -> Variable.toString x
-        | AppView (f, es) ->
-            let esStr = if (BL.is_empty es) then "" else "(" ^ (toStrings es) ^ ")" in
-              O.toString f ^ esStr
-         | AbsView (x, e) -> (Variable.toString x) ^ "." ^ (toString e)
-      and toStrings = function
-        | [] -> ""
-        | [e] -> toString e
-        | e::es -> (toString e) ^ "; " ^ (toStrings es)
+  let rec toPretty e =
+    match out e with
+    | VarView x -> P.printVar (text (Variable.toUserString x))
+    | AppView (f, es) -> P.printApp f (BL.map ~f:toPretty es)
+    | AbsView (x, e) -> P.printAbs (text (Variable.toUserString x)) (toPretty e)
+
+  let toString e = P.print (toPretty e)
 end

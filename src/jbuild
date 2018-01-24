@@ -3,6 +3,6 @@
 (library
  ((name abt)
   (public_name abt)
-  (libraries (base))
+  (libraries (base prettiest))
  )
 )

@@ -1,6 +1,6 @@
 opam-version: "1.2"
 name: "abt"
-version: "0.0.4"
+version: "0.0.5"
 homepage: "https://github.com/ayberkt/abt"
 maintainer: "Ayberk Tosun <ayberk.tosun@gmail.com>"
 authors: [ "Ayberk Tosun <ayberk.tosun@gmail.com>" ]
@@ -11,6 +11,7 @@ build: [
 depends: [
   "jbuilder" {build & >= "1.0+beta12"}
   "base" {build & >= "v0.9.4"}
+  "prettiest" {build & >= "0.0.1"}
 ]
 descr: "
 OCaml port of CMU's abstract binding trees.

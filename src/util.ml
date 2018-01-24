@@ -25,5 +25,4 @@ module Util = struct
     | [], [] -> true
     | (x::xs), (y::ys) -> p(x, y) && zipTest p xs ys
     | _  -> false
-
 end

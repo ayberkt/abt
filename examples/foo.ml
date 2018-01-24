@@ -27,21 +27,25 @@ module LamOp : OPERATOR with type t = lam_op = struct
     | Lam, Lam   -> true
     | Ap, Ap     -> true
     | _          -> false
-
-  let toString op =
-    match op with
-    | Zero -> "z"
-    | Succ -> "S"
-    | Let  -> "let"
-    | Lam  -> "lam"
-    | Ap   -> "ap"
 end
 
-module LamTerm = MakeAbt(LamOp)
+module LamOpPrinter : OPERATOR_PRINTER with type op = lam_op = struct
+  type op = lam_op
+
+  let print op =
+    match op with
+    | Zero -> "zero"
+    | Succ -> "succ"
+    | Let -> "let"
+    | Lam -> "lam"
+    | Ap -> "ap"
+end
+
+module LamPrinter = MakeSexprPrinter(LamOpPrinter)(MakeView(LamOp))
+module LamTerm = MakeAbt(LamOp)(LamPrinter)
 
 open LamTerm
 open Variable
-
 
 (* lam(x.x) *)
 let id =
@@ -65,7 +69,8 @@ let two  = Succ $$ [one]
 let _ =
   let pr x =
     try
-    print_string (LamTerm.toString x)
+    print_string (LamTerm.toString x);
+    print_newline();
     with
     | Malformed -> print_string "Malformed ABT\n" in
   iter [zero; one; two; id; s1; s2] ~f:pr
