@@ -25,26 +25,37 @@ module UntypedOp : OPERATOR with type t = untyped_op = struct
     | _ -> false
 end
 
-module UntypedPrinter : ABT_PRINTER with type View.op = untyped_op = struct
+module UntypedTerm = MakeAbt(UntypedOp)
+
+module UntypedPrinter : ABT_PRINTER
+  with type View.op = untyped_op
+  and type Abt.t = UntypedTerm.t
+  = struct
+
   open Prettiest
   open Prettiest.Infix
 
   module Option = Base.Option
+
   module View = MakeView(UntypedOp)
+  module Abt = UntypedTerm
 
-  let printVar s = s
+  open View
 
-  let printAbs a b = a <> text " . " <> b
+  let rec toPretty e =
+    match Abt.out e with
+    | VarView x -> text (Variable.toUserString x)
+    | AbsView (x, e) -> text (Variable.toUserString x) <> text " . " <> toPretty e
+    | AppView (f, es) ->
+      let args = List.map toPretty es in
+      begin
+        match f with
+        | Lam -> text "(λ" <> (sep args) <> text ")"
+        | Ap -> text "(" <> (sep args) <> text ")"
+      end
 
-  let printApp op args =
-    match op with
-    | Lam -> text "(λ" <> (sep args) <> text ")"
-    | Ap -> text "(" <> (sep args) <> text ")"
-
-  let print e = Option.value ~default:"did not fit" (Prettiest.render 80 e)
+  let print e = Option.value ~default:"did not fit" (Prettiest.render 80 (toPretty e))
 end
-
-module UntypedTerm = MakeAbt(UntypedOp)(UntypedPrinter)
 
 open UntypedTerm
 open Variable
@@ -84,7 +95,7 @@ let rec eval e =
   )
 
 let _ =
-  let show = UntypedTerm.toString in
+  let show = UntypedPrinter.print in
 
   let x = named "x" in
   let y = named "y" in

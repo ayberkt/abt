@@ -41,8 +41,8 @@ module LamOpPrinter : OPERATOR_PRINTER with type op = lam_op = struct
     | Ap -> "ap"
 end
 
-module LamPrinter = MakeSexprPrinter(LamOpPrinter)(MakeView(LamOp))
-module LamTerm = MakeAbt(LamOp)(LamPrinter)
+module LamTerm = MakeAbt(LamOp)
+module LamPrinter = MakeSexprPrinter(LamOpPrinter)(MakeView(LamOp))(LamTerm)
 
 open LamTerm
 open Variable
@@ -69,7 +69,7 @@ let two  = Succ $$ [one]
 let _ =
   let pr x =
     try
-    print_string (LamTerm.toString x);
+    print_string (LamPrinter.print x);
     print_newline();
     with
     | Malformed -> print_string "Malformed ABT\n" in
