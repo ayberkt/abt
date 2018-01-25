@@ -11,7 +11,7 @@ build: [
 depends: [
   "jbuilder" {build & >= "1.0+beta12"}
   "base" {build & >= "v0.9.4"}
-  "prettiest" {build & >= "0.0.1"}
+  "prettiest" {build & >= "0.0.2"}
 ]
 descr: "
 OCaml port of CMU's abstract binding trees.

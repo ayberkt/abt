@@ -42,7 +42,8 @@ module LamOpPrinter : OPERATOR_PRINTER with type op = lam_op = struct
 end
 
 module LamTerm = MakeAbt(LamOp)
-module LamPrinter = MakeSexprPrinter(LamOpPrinter)(MakeView(LamOp))(LamTerm)
+module LamWidth = struct let width = 80 end
+module LamPrinter = MakeSexprPrinter(LamOpPrinter)(MakeView(LamOp))(LamTerm)(LamWidth)
 
 open LamTerm
 open Variable

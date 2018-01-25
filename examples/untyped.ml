@@ -8,9 +8,6 @@ type untyped_op =
   | Ap
 
 module UntypedOp : OPERATOR with type t = untyped_op = struct
-  open Prettiest
-  open Prettiest.Infix
-
   type t = untyped_op
 
   let arity op =
@@ -32,29 +29,28 @@ module UntypedPrinter : ABT_PRINTER
   and type Abt.t = UntypedTerm.t
   = struct
 
-  open Prettiest
-  open Prettiest.Infix
-
   module Option = Base.Option
 
   module View = MakeView(UntypedOp)
   module Abt = UntypedTerm
+  module P = Prettiest.Make(struct let width = 80 end)
 
   open View
+  open P.Infix
 
   let rec toPretty e =
     match Abt.out e with
-    | VarView x -> text (Variable.toUserString x)
-    | AbsView (x, e) -> text (Variable.toUserString x) <> text " . " <> toPretty e
+    | VarView x -> P.text (Variable.toUserString x)
+    | AbsView (x, e) -> P.text (Variable.toUserString x) <> P.text " . " <> toPretty e
     | AppView (f, es) ->
       let args = List.map toPretty es in
       begin
         match f with
-        | Lam -> text "(λ" <> (sep args) <> text ")"
-        | Ap -> text "(" <> (sep args) <> text ")"
+        | Lam -> P.text "(λ" <> (P.sep args) <> P.text ")"
+        | Ap -> P.text "(" <> (P.sep args) <> P.text ")"
       end
 
-  let print e = Option.value ~default:"did not fit" (Prettiest.render 80 (toPretty e))
+  let print e = Option.value ~default:"did not fit" (P.render (toPretty e))
 end
 
 open UntypedTerm
