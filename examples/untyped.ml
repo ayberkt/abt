@@ -35,17 +35,23 @@ module UntypedPrinter : ABT_PRINTER
   module P = Prettiest.Make(struct let width = 80 end)
 
   open P.Infix
+  open P.Characters
 
   let rec toPretty e =
     match Abt.out e with
     | VarView x -> P.text (Variable.toUserString x)
-    | AbsView (x, e) -> P.text (Variable.toUserString x) <> P.text " . " <> toPretty e
+    | AbsView (x, e) -> P.text (Variable.toUserString x) <> space <> dot <> space <> toPretty e
     | AppView (f, es) ->
       let args = List.map toPretty es in
+      let prettyArgs = P.sep (P.intersperse space args) in
+      let prettyAbsArgs =
+        match args with
+        | [] -> P.empty
+        | args' -> space <> prettyArgs in
       begin
         match f with
-        | Lam -> P.text "(λ" <> (P.sep args) <> P.text ")"
-        | Ap -> P.text "(" <> (P.sep args) <> P.text ")"
+        | Lam -> lparen <> P.text "λ" <> prettyAbsArgs <> rparen
+        | Ap -> lparen <> prettyArgs <> rparen
       end
 
   let print e = Option.value ~default:"did not fit" (P.render (toPretty e))
