@@ -25,17 +25,15 @@ end
 module UntypedTerm = MakeAbt(UntypedOp)
 
 module UntypedPrinter : ABT_PRINTER
-  with type View.op = untyped_op
-  and type Abt.t = UntypedTerm.t
+  with module Abt = UntypedTerm
   = struct
 
   module Option = Base.Option
 
-  module View = MakeView(UntypedOp)
   module Abt = UntypedTerm
+  module Variable = Abt.Variable
   module P = Prettiest.Make(struct let width = 80 end)
 
-  open View
   open P.Infix
 
   let rec toPretty e =

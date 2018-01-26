@@ -43,7 +43,7 @@ end
 
 module LamTerm = MakeAbt(LamOp)
 module LamWidth = struct let width = 80 end
-module LamPrinter = MakeSexprPrinter(LamOpPrinter)(MakeView(LamOp))(LamTerm)(LamWidth)
+module LamPrinter = MakeSexprPrinter(LamTerm)(LamOpPrinter)(LamWidth)
 
 open LamTerm
 open Variable

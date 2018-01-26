@@ -1,10 +1,9 @@
-open View
+open Variable
 open Operator
 open Abt_inner
 
 module type ABT_PRINTER = sig
   module Abt : ABT
-  module View : VIEW
 
   val print : Abt.t -> string
 end
@@ -16,28 +15,23 @@ module type OPERATOR_PRINTER = sig
 end
 
 module MakeSexprPrinter
-  (O : OPERATOR_PRINTER)
-  (V : VIEW with type op = O.op)
-  (A : ABT with type View.op = O.op and type View.Variable.t = V.Variable.t)
+  (A : ABT)
+  (O : OPERATOR_PRINTER with type op = A.op)
   (W : Prettiest.Width)
   : ABT_PRINTER
-  with type View.op = V.op
-  and type Abt.t = A.t
+  with module Abt = A
   = struct
 
   module Option = Base.Option
 
-  module View = V
   module Abt = A
+  module Variable = Abt.Variable
   module P = Prettiest.Make(W)
 
-  open View
   open P.Infix
 
-  type t = A.t
-
   let rec toPretty e =
-    match A.out e with
+    match Abt.out e with
     | VarView x -> P.text (Variable.toUserString x)
     | AbsView (x, e) -> P.text (Variable.toUserString x) <> P.text " . " <> toPretty e
     | AppView (f, es) ->

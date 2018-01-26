@@ -1,47 +1,57 @@
 open Variable
-open View
 open Operator
 
 module type ABT = sig
   module Variable : VARIABLE
-  module View : VIEW
 
+  type op
   type t
+
+  type 'a view =
+  | VarView of Variable.t
+  | AbsView of Variable.t * 'a
+  | AppView of op * 'a list
 
   exception Malformed
 
-  val into : t View.view -> t
-  val out : t -> t View.view
+  val into : t view -> t
+  val out : t -> t view
 
   val aequiv : t * t -> bool
-  val map : ('a -> 'b) -> 'a View.view -> 'b View.view
+  val map : ('a -> 'b) -> 'a view -> 'b view
 
   val freevars : t -> Variable.t list
   val subst : t -> Variable.t -> t -> t
 
   val intoVar : Variable.t -> t
   val intoAbs : Variable.t -> t -> t
-  val intoApp : View.op -> t list -> t
+  val intoApp : op -> t list -> t
 
   val ( !! ) : Variable.t -> t
   val ( ^^ ) : Variable.t -> t -> t
-  val ( $$ ) : View.op -> t list -> t
+  val ( $$ ) : op -> t list -> t
 end
 
-module MakeAbt (O : OPERATOR) = struct
+module MakeAbt (O : OPERATOR) : ABT
+  with type op = O.t
+  and module Variable = Var
+  = struct
   open Util
 
   module BL = Base.List
   module Variable = Var
-  module View = MakeView(O)
 
-  open View
-
+  type op = O.t
   type t =
     | FV of Var.t
     | BV of int
     | ABS of Var.t * t
     | OPER of O.t * t list
+
+  type 'a view =
+  | VarView of Variable.t
+  | AbsView of Variable.t * 'a
+  | AppView of O.t * 'a list
 
   exception Malformed
 
