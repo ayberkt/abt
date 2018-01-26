@@ -40,17 +40,13 @@ module UntypedPrinter : ABT_PRINTER
   let rec toPretty e =
     match Abt.out e with
     | VarView x -> P.text (Variable.toUserString x)
-    | AbsView (x, e) -> P.text (Variable.toUserString x) <> space <> dot <> space <> toPretty e
+    | AbsView (x, e) -> P.text (Variable.toUserString x) <+> dot <+> toPretty e
     | AppView (f, es) ->
       let args = List.map toPretty es in
       let prettyArgs = P.sep (P.intersperse space args) in
-      let prettyAbsArgs =
-        match args with
-        | [] -> P.empty
-        | args' -> space <> prettyArgs in
       begin
         match f with
-        | Lam -> lparen <> P.text "λ" <> prettyAbsArgs <> rparen
+        | Lam -> lparen <> P.text "λ" <//> prettyArgs <> rparen
         | Ap -> lparen <> prettyArgs <> rparen
       end
 
