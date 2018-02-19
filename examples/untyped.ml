@@ -20,14 +20,38 @@ module UntypedOp : OPERATOR with type t = untyped_op = struct
     | Lam, Lam -> true
     | Ap, Ap -> true
     | _ -> false
-
-  let toString op =
-    match op with
-    | Lam -> "lam"
-    | Ap -> "ap"
 end
 
 module UntypedTerm = MakeAbt(UntypedOp)
+
+module UntypedPrinter : ABT_PRINTER
+  with module Abt = UntypedTerm
+  = struct
+
+  module Option = Base.Option
+
+  module Abt = UntypedTerm
+  module Variable = Abt.Variable
+  module P = Prettiest.Make(struct let width = 80 end)
+
+  open P.Infix
+  open P.Characters
+
+  let rec toPretty e =
+    match Abt.out e with
+    | VarView x -> P.text (Variable.toUserString x)
+    | AbsView (x, e) -> P.text (Variable.toUserString x) <+> dot <+> toPretty e
+    | AppView (f, es) ->
+      let args = List.map toPretty es in
+      let prettyArgs = P.sep (P.intersperse space args) in
+      begin
+        match f with
+        | Lam -> lparen <> P.text "λ" <//> prettyArgs <> rparen
+        | Ap -> lparen <> prettyArgs <> rparen
+      end
+
+  let print e = Option.value ~default:"did not fit" (P.render (toPretty e))
+end
 
 open UntypedTerm
 open Variable
@@ -67,7 +91,7 @@ let rec eval e =
   )
 
 let _ =
-  let show = UntypedTerm.toString in
+  let show = UntypedPrinter.print in
 
   let x = named "x" in
   let y = named "y" in
