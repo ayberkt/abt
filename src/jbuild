@@ -1,8 +1,0 @@
-(jbuild_version 1)
-
-(library
- ((name abt)
-  (public_name abt)
-  (libraries (base prettiest))
- )
-)
