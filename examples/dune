@@ -1,0 +1,9 @@
+(executable
+ (name foo)
+ (modules foo)
+ (libraries abt))
+
+(executable
+ (name untyped)
+ (modules untyped)
+ (libraries abt))

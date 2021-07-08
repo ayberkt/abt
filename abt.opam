@@ -1,7 +1,9 @@
-opam-version: "1.2"
+opam-version: "2.0"
 name: "abt"
 version: "0.0.5"
 homepage: "https://github.com/ayberkt/abt"
+dev-repo: "git+https://github.com/ayberkt/abt.git"
+bug-reports: "https://github.com/ayberkt/abt/issues"
 maintainer: "Ayberk Tosun <ayberk.tosun@gmail.com>"
 authors: [ "Ayberk Tosun <ayberk.tosun@gmail.com>" ]
 license: "MIT"
@@ -13,6 +15,4 @@ depends: [
   "base" {build & >= "v0.9.4"}
   "prettiest" {build & >= "0.0.2"}
 ]
-descr: "
-OCaml port of CMU's abstract binding trees.
-"
+description: "OCaml port of CMU's abstract binding trees"

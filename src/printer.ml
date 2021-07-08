@@ -1,5 +1,3 @@
-open Variable
-open Operator
 open Abt_inner
 
 module type ABT_PRINTER = sig
@@ -37,8 +35,8 @@ module MakeSexprPrinter
     | AbsView (x, e) -> P.text (Variable.toUserString x) <+> dot <+> toPretty e
     | AppView (f, es) ->
       let args = List.map toPretty es in
-      let prettyArgs = P.sep (P.intersperse space args) in
+      let prettyArgs = P.sep (P.intersperse ~sep:space args) in
         lparen <> (P.text (O.print f)) <//> prettyArgs <> rparen
-    
+
   let print e = Option.value ~default:"did not fit" (P.render (toPretty e))
 end

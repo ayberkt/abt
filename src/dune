@@ -1,0 +1,3 @@
+(library
+ (public_name abt)
+ (libraries base prettiest))
