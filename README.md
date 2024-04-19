@@ -5,8 +5,8 @@ Ocaml port of CMU's ABT library (with various modifications).
 
 To build:
 ```
-jbuilder build examples/foo.exe
-jbuilder build examples/untyped.exe
+dune build examples/foo.exe
+dune build examples/untyped.exe
 ```
 
 To run:
