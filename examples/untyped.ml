@@ -43,7 +43,7 @@ module UntypedPrinter : ABT_PRINTER
     | AbsView (x, e) -> P.text (Variable.toUserString x) <+> dot <+> toPretty e
     | AppView (f, es) ->
       let args = List.map toPretty es in
-      let prettyArgs = P.sep (P.intersperse space args) in
+      let prettyArgs = P.sep (P.intersperse ~sep:space args) in
       begin
         match f with
         | Lam -> lparen <> P.text "λ" <//> prettyArgs <> rparen
@@ -79,7 +79,7 @@ let rec eval e =
         (match out e with
         | AppView (Ap, [f; xvar]) ->
             (match out xvar with
-            | VarView xx -> 
+            | VarView xx ->
               if (equal (x, xx)) && not (exists (fun y -> equal (xx, y)) (freevars f)) then
                 out f
               else
@@ -122,7 +122,7 @@ let _ =
   print_string ("if: " ^ show _if ^ "\n");
 
   let if_true_then_true = eval (Ap $$ [(Ap $$ [(Ap $$ [_if; _true]); _true]); _false]) in
-  print_string ("if_true_then_true: " ^ show if_true_then_true ^ "\n");    
+  print_string ("if_true_then_true: " ^ show if_true_then_true ^ "\n");
 
   (* \a.\b. if a b false *)
   let _and = Lam $$ [a ^^ (Lam $$ [b ^^ (Ap $$ [
